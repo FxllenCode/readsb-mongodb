@@ -63,5 +63,18 @@ async fn main() {
             info!("Check time set to {} seconds", refresh_time * 30);
         }
 
+        // Check data/aircraft.json every refresh_time, and add it to the mongodb database using the db_interface function.
+        loop {
+            let res = reqwest::get(format!("http://{}:{}/data/aircraft.json", data.config.ip, data.config.port)).await.expect("Failed to get aircraft.json!");
+            let res_json = res.json::<serde_json::Value>().await.expect("Failed to parse aircraft.json!");
+            // Save the JsonFile to the database
+            // Convert res_json to a vector of Aircraft, include the current time in the struct. Then insert it into the database.
+                
+                db_interface.insert_aircraft(&res_json).await.expect("Failed to insert aircraft into database!");
+            
+            info!("Inserted {} aircraft into the database!", aircraft.len());
+            tokio::time::sleep(Duration::from_millis(metadata.get_time_to_check())).await;
+        }
+
 
 }
