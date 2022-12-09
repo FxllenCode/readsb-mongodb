@@ -42,6 +42,12 @@ impl DbInterface {
         info!("Connected to database!");
         Ok(())
     }
+    
+    pub async fn insert_aircraft(&self, aircraft: &Document) -> mongodb::error::Result<()> {
+        let collection = self.client.as_ref().unwrap().database("readsb-mognodb").collection("history");
+        collection.insert_one(aircraft.clone(), None).await?;
+        Ok(())
+    }
 
 
 }
