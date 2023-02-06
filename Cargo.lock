@@ -271,22 +271,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dump1090-mongodb"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "fern",
- "log",
- "mongodb",
- "reqwest",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio",
- "toml",
-]
-
-[[package]]
 name = "encoding_rs"
 version = "0.8.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -835,9 +819,9 @@ dependencies = [
 
 [[package]]
 name = "native-tls"
-version = "0.2.10"
+version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd7e2f3618557f980e0b17e8856252eee3c97fa12c54dff0ca290fb6266ca4a9"
+checksum = "07226173c32f2926027b63cce4bcd8076c3552846cbe7925f3aaffeac0a3b92e"
 dependencies = [
  "lazy_static",
  "libc",
@@ -1064,6 +1048,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "readsb-mongodb"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "fern",
+ "log",
+ "mongodb",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tokio",
+ "toml",
 ]
 
 [[package]]

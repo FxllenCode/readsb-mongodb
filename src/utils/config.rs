@@ -6,8 +6,7 @@ pub struct Data {
 }
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    pub ip: String,
-    pub port: u16,
+    pub url: String,
     pub db: String,
     pub collection: String,
     pub check_time: Option<u64>,

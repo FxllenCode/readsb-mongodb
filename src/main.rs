@@ -2,11 +2,12 @@ use log::{debug, error, info, trace, warn};
 mod utils;
 use utils::config::Data;
 use std::process::exit;
-use std::fs;
+use std::fs::{self, Permissions};
 mod controller;
 use controller::db_interface::DbInterface;
 use controller::metadata::Metadata;
 use reqwest;
+use controller::process_data::RawData;
 fn setup_logger() -> Result<(), fern::InitError> {
     fern::Dispatch::new()
         .format(|out, message, record| {
@@ -43,6 +44,8 @@ async fn main() {
             exit(1);
         }
     };
+
+
         info!("Config file parsed successfully!");
         debug!("Config file contents: {:?}", data);
 
@@ -56,12 +59,24 @@ async fn main() {
             metadata.set_time_to_check(data.config.check_time.unwrap() * 1000);
         } else {
             info!("There was not a manual check time supplied in `Configuration.toml`. Setting check time to the refresh time in `reciever.json` * 30 in seconds!! (Default: 1000 * 30, so 30 seconds)");
-            let res = reqwest::get(format!("http://{}:{}/data/receiver.json", data.config.ip, data.config.port)).await.expect("Failed to get reciever.json!");
+            let res = reqwest::get(format!("{}/data/receiver.json", data.config.url)).await.expect("Failed to get reciever.json!");
             let res_json = res.json::<serde_json::Value>().await.expect("Failed to parse reciever.json!");
             let refresh_time = res_json["refresh"].as_u64().unwrap();
             metadata.set_time_to_check(refresh_time * 30);
             info!("Check time set to {} seconds", refresh_time * 30);
         }
+        async fn checkh() -> Result<(), Box<dyn std::error::Error>> {
+            let resp = reqwest::get("http://192.168.86.71/tar1090/data/aircraft.json")
+            .await?
+            .json::<serde_json::Value>()
+            .await?;
+            println!("{:?}", resp);
+            let typed: RawData = serde_json::from_value(resp).unwrap();
+            println!("{:?}", typed.aircraft[0].gs);
+            Ok(())
+        }
+
+        checkh().await;
 
         // Check data/aircraft.json every refresh_time, and add it to the mongodb database using the db_interface function.
         loop {

@@ -1,5 +1,5 @@
 [package]
-name = "dump1090-mongodb"
+name = "readsb-mongodb"
 version = "0.1.0"
 edition = "2021"
 
