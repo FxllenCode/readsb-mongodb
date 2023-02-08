@@ -1,8 +1,8 @@
-use log::{debug, error, info, trace, warn};
-use mongodb::{bson::doc, bson::to_document, bson::Document, options::ClientOptions, Client};
+use log::{info};
+use mongodb::{bson::doc, bson::Document, options::ClientOptions, Client};
 
-use super::super::utils::config::Data;
-use serde::{Deserialize, Serialize};
+
+
 
 #[derive(Clone, Debug)]
 pub struct DbInterface {
@@ -24,7 +24,7 @@ impl DbInterface {
                 }
             }
             Err(e) => {
-                panic!("Failed to parse client options: {:?}", e)
+                panic!("Failed to parse client options: {e:?}")
             }
         }
     }

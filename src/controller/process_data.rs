@@ -1,10 +1,10 @@
 use ::serde;
 use serde::{Deserialize, Serialize};
-use std::any::{self, Any};
+
 // The annoying part about this is that it is not tolerant to updates. It can break with breaking changes!
 // Maybe someday in the future it could be possible to use an AI to scrape https://github.com/wiedehopf/readsb/blob/dev/README-json.md and create the types automatically through a GitHub bot/pull request but I digressgress.
 // For now, the type will need to update if readsb adds new fields.
-use chrono::DateTime;
+
 
 #[derive(Serialize, Deserialize)]
 pub struct RawData {

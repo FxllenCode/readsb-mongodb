@@ -1,14 +1,14 @@
-use log::{debug, error, info, trace, warn};
+use log::{debug, error, info};
 mod utils;
-use std::fs::{self, Permissions};
+use std::fs::{self};
 use std::process::exit;
 use utils::config::Data;
 mod controller;
 use controller::db_interface::DbInterface;
 use controller::metadata::Metadata;
 use controller::process_data::RawData;
-use controller::registration::stride_reg;
-use reqwest;
+use controller::registration::registration;
+
 fn setup_logger() -> Result<(), fern::InitError> {
     fern::Dispatch::new()
         .format(|out, message, record| {
@@ -27,6 +27,7 @@ fn setup_logger() -> Result<(), fern::InitError> {
 }
 #[tokio::main]
 async fn main() {
+    println!("{}", registration("71BD52").await.unwrap());
     setup_logger().expect("Failed to setup logger");
     info!("Starting mission...");
 
@@ -78,7 +79,7 @@ async fn main() {
             .await?
             .json::<serde_json::Value>()
             .await?;
-        println!("{:?}", resp);
+        println!("{resp:?}");
         let typed: RawData = serde_json::from_value(resp).unwrap();
         println!("{:?}", typed.aircraft[0].alt_baro.unwrap());
         Ok(())

@@ -1,8 +1,6 @@
-use chrono::offset;
 // Ported from @wiedehopf's tar1090 registration.js file
 // https://github.com/wiedehopf/tar1090/blob/master/html/registrations.js
 // All credit belongs to him for the basic implementation of this!
-use math::round;
 use radix_fmt::radix;
 
 pub struct RegularPattern {
@@ -91,14 +89,8 @@ fn create_from_mappings(
             s2,
             prefix: prefix.to_string(),
             alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().collect(),
-            first: match first {
-                Some(first) => Some(first.to_string()),
-                None => None,
-            },
-            last: match last {
-                Some(last) => Some(last.to_string()),
-                None => None,
-            },
+            first: first.map(|first| first.to_string()),
+            last: last.map(|last| last.to_string()),
             end: 0,
             offset: 0,
         };
@@ -151,9 +143,9 @@ pub fn stride_reg(hex: u32) -> Option<String> {
         }
         let mut offset = hex - map.start + map.offset;
         let i1 = offset / map.s1;
-        offset = offset % map.s1;
+        offset %= map.s1;
         let i2 = offset / map.s2;
-        offset = offset % map.s2;
+        offset %= map.s2;
         let i3 = offset;
         if i1 >= map.alphabet.clone().len() as u32
             || i2 >= map.alphabet.clone().len() as u32
@@ -187,11 +179,11 @@ fn num_reg(hex: u32) -> Option<String> {
         let reg = reg.to_string();
         // Replace every zero in the template with the respective digit in order from reg. Remember, there are multiple zeros per template and the amount differs, so handle that
         let mut num: Vec<char> = map.template.clone().chars().collect();
-        let mut reg: Vec<char> = reg.chars().collect();
+        let reg: Vec<char> = reg.chars().collect();
         let mut i = 0;
-        for (mut index, mut c) in num.clone().iter().enumerate() {
+        for (index, c) in num.clone().iter().enumerate() {
             if *c == '0' {
-                num[index as usize] = reg[i];
+                num[index] = reg[i];
                 i += 1;
             }
         }
@@ -208,75 +200,79 @@ fn n_letter(mut rem: u32) -> Option<String> {
         return None;
     }
 
-    rem = rem - 1;
+    rem -= 1;
     let letter: Vec<char> = "ABCDEFGHJKLMNPQRSTUVWXYZ".chars().collect();
-    return Some(letter[rem as usize].to_string());
+    Some(letter[rem as usize].to_string())
 }
 // US UTILITIES
 fn n_letters(mut rem: u32) -> Option<String> {
     if rem == 0 {
         None
     } else {
-        rem = rem - 1;
+        rem -= 1;
         let letter: Vec<char> = "ABCDEFGHJKLMNPQRSTUVWXYZ".chars().collect();
-        let num: usize = (rem as u32 / 25) as usize;
+        let num: usize = (rem / 25) as usize;
         Some(letter[num].to_string() + &n_letter(rem % 25).unwrap())
     }
 }
 
 // United States
 
-pub fn n_reg(mut hex: u32) -> Option<String> {
+pub fn n_reg(hex: u32) -> Option<String> {
+    if !(0xA00001..=0xA8FFFF).contains(&hex) {
+        return None;
+    }
     let mut offset = hex - 0xA00001;
-    if offset < 0 || offset >= 915399 {
+
+    if offset >= 915399 {
         return None;
     }
 
     let digit1 = (offset / 101711) + 1;
     let mut reg = "N".to_string() + &digit1.to_string();
-    offset = offset % 101711;
+    offset %= 101711;
     if offset <= 600 {
-        return Some(reg + &n_letters(offset).unwrap().to_string());
+        return Some(reg + &n_letters(offset).unwrap());
     }
 
     offset -= 601;
     let digit2 = offset / 10111;
     reg = reg + &digit2.to_string();
-    offset = offset % 10111;
+    offset %= 10111;
     if offset <= 600 {
-        return Some(reg + &n_letters(offset).unwrap().to_string());
+        return Some(reg + &n_letters(offset).unwrap());
     }
     offset -= 601;
     let digit3 = offset / 951;
     reg = reg + &digit3.to_string();
-    offset = offset % 951;
+    offset %= 951;
     if offset <= 600 {
-        return Some(reg + &n_letters(offset).unwrap().to_string());
+        return Some(reg + &n_letters(offset).unwrap());
     }
     offset -= 601;
     let digit4 = offset / 35;
     reg = reg + &digit4.to_string();
-    offset = offset % 35;
+    offset %= 35;
     if offset <= 24 {
-        return Some(reg + &n_letter(offset).unwrap().to_string());
+        return Some(reg + &n_letter(offset).unwrap());
     }
 
     offset -= 25;
-    return Some(reg + &offset.to_string());
+    Some(reg + &offset.to_string())
 }
 
 // South Korean
 
 fn hl_reg(hex: u32) -> Option<String> {
-    if hex >= 0x71BA00 && hex <= 0x71bf99 {
+    if (0x71BA00..=0x71bf99).contains(&hex) {
         return Some("HL".to_string() + &radix(hex - 0x71BA00 + 0x7200, 16).to_string());
     }
 
-    if hex >= 0x71C000 && hex <= 0x71C099 {
+    if (0x71C000..=0x71C099).contains(&hex) {
         return Some("HL".to_string() + &radix(hex - 0x71C000 + 0x8000, 16).to_string());
     }
 
-    if hex >= 0x71C200 && hex <= 0x71C299 {
+    if (0x71C200..=0x71C299).contains(&hex) {
         return Some("HL".to_string() + &radix(hex - 0x71C200 + 0x8200, 16).to_string());
     }
 
@@ -284,12 +280,63 @@ fn hl_reg(hex: u32) -> Option<String> {
 }
 
 // Japan
+pub fn ja_reg(hex: u32) -> Option<String> {
+    if hex < 0x840000 {
+        return None;
+    }
+    let mut offset = hex - 0x840000;
+    if offset >= 229840 {
+        return None;
+    }
+    let mut reg = "JA".to_string();
+    let digit1 = offset / 22984;
+    if digit1 > 9 {
+        return None;
+    }
+    reg = reg + &digit1.to_string();
+    offset %= 22984;
 
-pub async fn registration(hex: i32) {
+    let digit2 = offset / 916;
+    if digit2 > 9 {
+        return None;
+    }
+    reg = reg + &digit2.to_string();
+    offset %= 916;
+    let limited: Vec<char> = "ABCDEFGHJKLMNPQRSTUVWXYZ".chars().collect();
 
-    // let regvec: Vec<RegularPattern> = create_from_mappings(stride_mappings);
+    if offset < 340 {
+        let digit3 = offset / 34;
+        reg += &digit3.to_string();
+        offset %= 34;
+        if offset < 10 {
+            return Some(reg + offset.to_string().as_str());
+        }
+        offset -= 10;
+        return Some(reg + limited[offset as usize].to_string().as_str());
+    }
 
-    // for i in regvec {
-    //     i.derive_data();
-    // }
+    offset -= 340;
+    let digit3 = offset / 24;
+    Some(reg + &digit3.to_string() + &limited[offset as usize % 24].to_string())
+}
+
+pub async fn registration(main: &str) -> Option<String> {
+    let hex = u32::from_str_radix(main, 16).unwrap();
+    if let Some(reg) = n_reg(hex) {
+        return Some(reg);
+    }
+    if let Some(reg) = ja_reg(hex) {
+        return Some(reg);
+    }
+    if let Some(reg) = hl_reg(hex) {
+        return Some(reg);
+    }
+    if let Some(reg) = num_reg(hex) {
+        return Some(reg);
+    }
+    if let Some(reg) = stride_reg(hex) {
+        return Some(reg);
+    }
+
+    None
 }
