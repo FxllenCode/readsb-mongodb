@@ -1,8 +1,8 @@
-use mongodb::{bson::doc, bson::to_document, bson::Document, options::ClientOptions, Client};
 use log::{debug, error, info, trace, warn};
+use mongodb::{bson::doc, bson::to_document, bson::Document, options::ClientOptions, Client};
 
-use serde::{Deserialize, Serialize};
 use super::super::utils::config::Data;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug)]
 pub struct DbInterface {
@@ -12,7 +12,6 @@ pub struct DbInterface {
 
 impl DbInterface {
     pub async fn new(uri: String) -> DbInterface {
-
         // Parse your connection string into an options struct
         let client_options = ClientOptions::parse(uri).await;
 
@@ -28,8 +27,7 @@ impl DbInterface {
                 panic!("Failed to parse client options: {:?}", e)
             }
         }
-    } 
-
+    }
 
     pub async fn connect(&mut self) -> mongodb::error::Result<()> {
         let client = Client::with_options(self.client_options.clone())?;
@@ -42,12 +40,15 @@ impl DbInterface {
         info!("Connected to database!");
         Ok(())
     }
-    
+
     pub async fn insert_aircraft(&self, aircraft: &Document) -> mongodb::error::Result<()> {
-        let collection = self.client.as_ref().unwrap().database("readsb-mognodb").collection("history");
+        let collection = self
+            .client
+            .as_ref()
+            .unwrap()
+            .database("readsb-mognodb")
+            .collection("history");
         collection.insert_one(aircraft.clone(), None).await?;
         Ok(())
     }
-
-
 }
